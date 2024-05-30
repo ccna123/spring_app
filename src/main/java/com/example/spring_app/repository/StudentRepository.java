@@ -19,7 +19,7 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     @Query("SELECT s.name FROM Student s")
     List<String> sortStudentsByName(Sort sort);
     
-    @Query("SELECT NEW com.example.DTO.NameScoreDTO(s.name, s.score) FROM Student s WHERE s.score BETWEEN :start AND :end")
+    @Query("SELECT NEW com.example.spring_app.DTO.NameScoreDTO(s.name, s.score) FROM Student s WHERE s.score BETWEEN :start AND :end")
     List<NameScoreDTO> findStudentByScoreInRange(@Param("start") int start, @Param("end") int end);
 
 }
