@@ -145,4 +145,9 @@ public class StudentService implements IStudentService {
         return studentRepository.findStudentByScoreInRange(start, end);
     }
 
+    @Override
+    public List<Student> findStudentByNamePattern(String pattern) {
+        return studentRepository.findByNamePattern(pattern);
+    }
+
 }

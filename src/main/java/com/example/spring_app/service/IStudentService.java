@@ -18,4 +18,6 @@ interface IStudentService extends ICrud<Student> {
     List<String> sortStudentsByName(String type);
     
     List<NameScoreDTO> findStudentByScoreInRange(int start, int end);
+
+    List<Student> findStudentByNamePattern(String pattern);
 }

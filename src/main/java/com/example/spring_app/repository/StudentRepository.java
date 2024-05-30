@@ -22,4 +22,6 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
     @Query("SELECT NEW com.example.spring_app.DTO.NameScoreDTO(s.name, s.score) FROM Student s WHERE s.score BETWEEN :start AND :end")
     List<NameScoreDTO> findStudentByScoreInRange(@Param("start") int start, @Param("end") int end);
 
+    @Query("SELECT s FROM Student s WHERE s.name LIKE %:pattern%")
+    List<Student> findByNamePattern(@Param("pattern") String pattern);
 }
