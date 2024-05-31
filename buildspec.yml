@@ -1,0 +1,68 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo start pre build.
+
+      # ログインユーザーの確認
+      - id
+      # OS情報の確認
+      - cat /etc/system-release
+      - cat /etc/os-release
+      # 各種パッケージの最新化
+      - yum update -y
+      # タイムゾーンの変更
+      - date
+      - cp /usr/share/zoneinfo/Japan /etc/localtime
+      - date
+      # Javaのインストール
+      - java -version
+      # - yum install -y java-21-amazon-corretto-headless
+      # Gradleのインストール
+      - wget https://services.gradle.org/distributions/gradle-8.7-bin.zip
+      - mkdir /opt/gradle
+      - unzip -d /opt/gradle gradle-8.7-bin.zip
+      - ls /opt/gradle/gradle-8.7
+      - echo finish pre build.
+
+  build:
+    commands:
+      - echo start build.
+      - ls /usr/lib/jvm
+      - echo $JAVA_HOME
+      - export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto.x86_64
+
+      - export PATH=$PATH:/opt/gradle/gradle-8.7/bin
+      - gradle --version
+      - chmod +x gradlew
+      # Gradleビルド
+      - ./gradlew clean build
+      - ls -l build/libs
+
+
+      - echo finish build.
+
+  post_build:
+    commands:
+      - echo start post build.
+
+      # S3にアップロードするファイルを所定のディレクトリにコピー
+      - mkdir artifacts
+      - cp build/libs/spring_app.jar artifacts
+      - cp appspec.yml artifacts
+      - cp scripts/application_stop.sh artifacts
+      - cp scripts/application_start.sh artifacts
+      - cp scripts/before_install.sh artifacts
+      - echo finish post build.
+
+artifacts:
+  # S3にアップロードするファイルを指定
+  files:
+    - spring_app.jar
+    - appspec.yml
+    - application_stop.sh
+    - application_start.sh
+    - before_install.sh
+  # ベースディレクトリ
+  base-directory: artifacts
