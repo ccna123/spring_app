@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/spring?useSSL=false
+    username: mit
+    password: Password123!
+    driver-class-name: com.mysql.jdbc.Driver
+  application:
+    name: spring app
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: mysql
+
+logging:
+  level:
+    "[org.hibernate.sql]": debug
+
+  #JPA setting
+
+security:
+  jwt:
+    secret-key: e2621ff8c240dba7f5118b051503737d20a45d39061097a00d4312f5bc67152ba23d28c6d9210047c4552bb9c4a4ee5d7fb59f805fcdd5a6f0487a5ae0207f17ecbafb13851b3df7a49d3a5e60ec03c7fa16ae8677eaec65ae6c06166f9303b8fe063b78c5bc9ca9c52da643fbff1ce31ea609371817be5ecb178ce4639405e79778943493dcf1e16785d0bd79d06ccec706c04531cb36104bb64ead6ac6d75ea24e3e4e9087bb7d81bd526bb123ffdcf48e86accb3f9dedbf12b8f858cd36d0ca31af62140b7b15581d2517610211f24404b03264e0aa82a5429ec073ec6720a680d114c7ea1f0affcd74ad54aa390be05291a74f165a68a78904be1279fff6
+    expire-min: 24
