@@ -29,6 +29,8 @@ dependencies {
 	testImplementation group: 'net.bytebuddy', name: 'byte-buddy-agent', version: '1.12.19'
 	implementation group: 'org.objenesis', name: 'objenesis', version: '3.3'
 	implementation group: 'com.amazonaws.secretsmanager', name: 'aws-secretsmanager-jdbc', version: '2.0.2'
+	implementation 'javax.servlet:javax.servlet-api:4.0.1'
+
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
