@@ -2,7 +2,7 @@ package com.example.spring_app.controller.RestController;
 
 import java.util.List;
 
-import org.apache.coyote.BadRequestException;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-
 import com.example.spring_app.exception.StudentNotFoundException;
 import com.example.spring_app.model.Student;
 import com.example.spring_app.response.ResponseHandler;
@@ -46,26 +44,23 @@ public class StudentController {
     }
 
     @GetMapping(value = { "/get", "/get/{id}" })
-    public ResponseEntity<Object> getStudentDetail(@PathVariable(value = "id", required = false) Integer id) {
+    public ResponseEntity<Object> getStudentDetail(@PathVariable(value = "id", required = false) Optional<Integer> id) {
         try {
-
-            if (id != null && (id < 0 || !id.toString().matches("\\d+"))) {
-                throw new BadRequestException("Invalid Id");
-            }
-
-            if (id == null) {
+            if (id.isPresent()) {
+                Integer studentId = id.get();
+                if (studentId < 0) {
+                    logger.warn("Invalid ID");
+                    return ResponseHandler.ResponseBuilder("Invalid ID", HttpStatus.BAD_REQUEST, null);
+                }
+                Student record = studentService.getSingle(studentId);
+                if (record == null) {
+                    return ResponseHandler.ResponseBuilder("Student not found", HttpStatus.NOT_FOUND, null);
+                }
+                return ResponseHandler.ResponseBuilder("Success", HttpStatus.OK, record);
+            } else {
                 List<Student> records = studentService.getAll();
                 return ResponseHandler.ResponseBuilder("Success", HttpStatus.OK, records);
-            } else {
-                Student record = studentService.getSingle(id);
-                return ResponseHandler.ResponseBuilder("Success", HttpStatus.OK, record);
             }
-        } catch (StudentNotFoundException e) {
-            logger.warn("StudentNotFoundException", e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }catch(BadRequestException e){
-            logger.warn("BadRequestException", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } 
         catch (Exception e) {
             logger.error("Exception", e);
@@ -118,7 +113,7 @@ public class StudentController {
     public ResponseEntity<Object> updateStudent(@PathVariable("id") Integer id, @RequestBody Student student) {
         try {
             Student record = studentService.update(id, student);
-            return ResponseHandler.ResponseBuilder("Updated successfully", HttpStatus.CREATED, record);
+            return ResponseHandler.ResponseBuilder("Updated successfully", HttpStatus.ACCEPTED, record);
         } catch (StudentNotFoundException e) {
             logger.warn("StudentNotFoundException", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

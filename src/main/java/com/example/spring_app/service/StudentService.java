@@ -37,7 +37,7 @@ public class StudentService implements IStudentService {
         if (studentContainer.isPresent()) {
             return studentContainer.get();
         } else {
-            throw new StudentNotFoundException("Not found");
+            return null;
         }
     }
 
