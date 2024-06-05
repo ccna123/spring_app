@@ -9,14 +9,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import com.example.spring_app.context.TenantContext;
-import com.example.spring_app.controller.RestController.StudentController;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
 @Order(1)
 public class TenantFilter implements Filter {
@@ -30,8 +27,7 @@ public class TenantFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         String tenantName = req.getHeader("X-TenantID");
         TenantContext.setCurrentTenant(tenantName);
-        logger.warn(tenantName);
-
+        
         try {
             chain.doFilter(request, response);
         } finally {
