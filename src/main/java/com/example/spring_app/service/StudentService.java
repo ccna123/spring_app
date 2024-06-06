@@ -65,10 +65,10 @@ public class StudentService implements IStudentService {
     public Student delete(int id) {
         Optional<Student> studentContainer = studentRepository.findById(id);
         if (studentContainer.isPresent()) {
-            studentRepository.deleteById(id);
+            studentRepository.delete(studentContainer.get());
             return studentContainer.get();
         } else {
-            throw new StudentNotFoundException("Student with id " + id + " not found");
+            return null;
         }
     }
 
@@ -78,7 +78,7 @@ public class StudentService implements IStudentService {
         if (!students.isEmpty()) {
             return students;
         } else {
-            throw new StudentNotFoundException("Student with name " + name + " not found");
+            return null;
         }
     }
 

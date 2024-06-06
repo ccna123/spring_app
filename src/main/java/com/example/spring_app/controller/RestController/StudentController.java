@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RequestMapping("/api/student/")
 @SecurityRequirement(name = "bearerAuth")
 public class StudentController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(StudentController.class);
 
     private final StudentService studentService;
@@ -61,13 +61,12 @@ public class StudentController {
                 List<Student> records = studentService.getAll();
                 return ResponseHandler.ResponseBuilder("Success", HttpStatus.OK, records);
             }
-        } 
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Exception", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    
+
     @GetMapping("/find/name/{name}")
     public ResponseEntity<Object> findByName(@PathVariable("name") String name) {
         try {
@@ -81,7 +80,7 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    
+
     @GetMapping("/find/score/{score}")
     public ResponseEntity<Object> findByScore(@PathVariable("score") int score) {
         try {
@@ -94,9 +93,9 @@ public class StudentController {
             logger.error("Exception", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-        
+
     }
-    
+
     @PostMapping("/add")
     public ResponseEntity<Object> postMethodName(@Valid @RequestBody Student newStudent) {
         try {
@@ -106,9 +105,9 @@ public class StudentController {
             logger.error("Exception", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-        
+
     }
-    
+
     @PutMapping("/update/{id}")
     public ResponseEntity<Object> updateStudent(@PathVariable("id") Integer id, @RequestBody Student student) {
         try {
@@ -122,12 +121,12 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteStudent(@PathVariable("id") Integer id) {
         try {
-            Student record = studentService.delete(id);
-            return ResponseHandler.ResponseBuilder("Deleted successfully", HttpStatus.OK, record);
+            studentService.delete(id);
+            return ResponseHandler.ResponseBuilder("Deleted successfully", HttpStatus.OK, null);
         } catch (StudentNotFoundException e) {
             logger.warn("StudentNotFoundException", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -136,76 +135,75 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-    
+
     @PostMapping("/enroll/{studentId}/{subjectId}")
     public ResponseEntity<Object> addSubjectToStudent(
-        @PathVariable("studentId") int studentId,
-        @PathVariable("subjectId") int subjectId) {
-            try {
-                Student enroll = studentService.addSubjectToStudent(studentId, subjectId);
-                return ResponseHandler.ResponseBuilder("Enroll successfully", HttpStatus.OK, enroll);
-            } catch (StudentNotFoundException e) {
-                logger.warn("StudentNotFoundException", e);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-            } catch (Exception e) {
-                logger.error("Exception", e);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-            }
-        }
-        
-        @PostMapping("/cancel/{studentId}/{subjectId}")
-        public ResponseEntity<Object> removeSubjectToStudent(
             @PathVariable("studentId") int studentId,
             @PathVariable("subjectId") int subjectId) {
-                try {
-                    Student enroll = studentService.removeSubjectToStudent(studentId, subjectId);
-                    return ResponseHandler.ResponseBuilder("Cancel subject successfully", HttpStatus.OK, enroll);
-                } catch (StudentNotFoundException e) {
-                    logger.warn("StudentNotFoundException", e);
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-                } catch (Exception e) {
-                    logger.error("Exception", e);
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-                }
-            }
-            
-            @GetMapping("/sort/{type}")
-            public ResponseEntity<Object> sortStudentsByName(@PathVariable("type") String type) {
-                try {
-                    List<String> records = studentService.sortStudentsByName(type);
-                    return ResponseEntity.ok(records);
-                } catch (Exception e) {
-                    logger.error("Exception", e);
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-                }
-            }
-            
-            @GetMapping("/score/{start}/{end}")
-            public ResponseEntity<Object> findStudentByScoreInRange(
-                @PathVariable("start") int start,
-                @PathVariable("end") int end) {
-                    try {
-                        List<NameScoreDTO> records = studentService.findStudentByScoreInRange(start, end);
-                        return ResponseEntity.ok(records);
-                    } catch (Exception e) {
-                        logger.error("Exception", e);
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-                    }
-                }
-                
-                @GetMapping("/name/{pattern}")
-                public ResponseEntity<Object> findStudentByNamePattern(@PathVariable("pattern") String pattern){
-                    try {
-                        List<Student> records = studentService.findStudentByNamePattern(pattern);
-                        return ResponseEntity.ok(records);
-                    } catch (StudentNotFoundException e) {
-                        logger.warn("StudentNotFoundException", e);
-                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-                    }catch(Exception e){
-                        logger.error("Exception", e);
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-                    }
-                }
-                
-            }
-            
+        try {
+            Student enroll = studentService.addSubjectToStudent(studentId, subjectId);
+            return ResponseHandler.ResponseBuilder("Enroll successfully", HttpStatus.OK, enroll);
+        } catch (StudentNotFoundException e) {
+            logger.warn("StudentNotFoundException", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/cancel/{studentId}/{subjectId}")
+    public ResponseEntity<Object> removeSubjectToStudent(
+            @PathVariable("studentId") int studentId,
+            @PathVariable("subjectId") int subjectId) {
+        try {
+            Student enroll = studentService.removeSubjectToStudent(studentId, subjectId);
+            return ResponseHandler.ResponseBuilder("Cancel subject successfully", HttpStatus.OK, enroll);
+        } catch (StudentNotFoundException e) {
+            logger.warn("StudentNotFoundException", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/sort/{type}")
+    public ResponseEntity<Object> sortStudentsByName(@PathVariable("type") String type) {
+        try {
+            List<String> records = studentService.sortStudentsByName(type);
+            return ResponseEntity.ok(records);
+        } catch (Exception e) {
+            logger.error("Exception", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/score/{start}/{end}")
+    public ResponseEntity<Object> findStudentByScoreInRange(
+            @PathVariable("start") int start,
+            @PathVariable("end") int end) {
+        try {
+            List<NameScoreDTO> records = studentService.findStudentByScoreInRange(start, end);
+            return ResponseEntity.ok(records);
+        } catch (Exception e) {
+            logger.error("Exception", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/name/{pattern}")
+    public ResponseEntity<Object> findStudentByNamePattern(@PathVariable("pattern") String pattern) {
+        try {
+            List<Student> records = studentService.findStudentByNamePattern(pattern);
+            return ResponseEntity.ok(records);
+        } catch (StudentNotFoundException e) {
+            logger.warn("StudentNotFoundException", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+}
