@@ -126,8 +126,8 @@ public class StudentController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteStudent(@PathVariable("id") Integer id) {
         try {
-            Student record = studentService.delete(id);
-            return ResponseHandler.ResponseBuilder("Deleted successfully", HttpStatus.OK, record);
+            studentService.delete(id);
+            return ResponseHandler.ResponseBuilder("Deleted successfully", HttpStatus.OK, null);
         } catch (StudentNotFoundException e) {
             logger.warn("StudentNotFoundException", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
