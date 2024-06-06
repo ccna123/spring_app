@@ -5,15 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import com.example.spring_app.context.TenantContext;
+import com.example.spring_app.controller.RestController.StudentController;
 
 public class MultitenantDataSource  extends AbstractRoutingDataSource{
-
+    final Logger logger = LoggerFactory.getLogger(MultitenantDataSource.class);
     @Override
     protected Object determineCurrentLookupKey() {
-        String currentTenant = TenantContext.getCurrentTenant();
-        final Logger logger = LoggerFactory.getLogger(MultitenantDataSource.class);
-        logger.info("Logger: ", currentTenant);
-        return currentTenant;
+        logger.warn("getCurrentTenant: " + TenantContext.getCurrentTenant());
+        return TenantContext.getCurrentTenant();
     }
     
 }
