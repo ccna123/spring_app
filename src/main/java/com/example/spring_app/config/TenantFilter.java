@@ -11,14 +11,11 @@ import javax.servlet.ServletResponse;
 import com.example.spring_app.context.TenantContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 
 @Order(1)
 public class TenantFilter implements Filter {
 
-    final Logger logger = LoggerFactory.getLogger(TenantFilter.class);
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
