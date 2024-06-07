@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import com.example.spring_app.context.TenantContext;
-import com.example.spring_app.controller.RestController.StudentController;
 
 public class MultitenantDataSource  extends AbstractRoutingDataSource{
     final Logger logger = LoggerFactory.getLogger(MultitenantDataSource.class);

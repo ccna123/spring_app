@@ -8,10 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
-import com.example.spring_app.controller.RestController.StudentController;
-
-import jakarta.annotation.PostConstruct;
-
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,12 +35,19 @@ public class DynamicDataSourceConfig {
     Map<Object, Object> resolvedDataSources = new HashMap<>();
     final Logger logger = LoggerFactory.getLogger(DynamicDataSourceConfig.class);
 
+    private AbstractRoutingDataSource routingDataSource;
+
     @Bean
     DataSource dataSource() {
         loadTenantDataSources();
-        watchForTenantPropertiesFiles();
+        // watchForTenantPropertiesFiles();
         return routingDatasource();
 
+    }
+
+    private void refreshRoutingDataSource(){
+        routingDataSource.setTargetDataSources(new HashMap<>(resolvedDataSources));
+        routingDataSource.afterPropertiesSet();
     }
 
     private void watchForTenantPropertiesFiles() {
@@ -67,6 +70,7 @@ public class DynamicDataSourceConfig {
                                         DataSource dataSource = createDataSource(file);
                                         resolvedDataSources.put(tenantId, dataSource);
                                         logger.warn("resolvedDataSources: " + resolvedDataSources);
+                                        // refreshRoutingDataSource();
                                     }
                                 }
                             }
@@ -83,12 +87,12 @@ public class DynamicDataSourceConfig {
     }
 
     private DataSource routingDatasource() {
-        AbstractRoutingDataSource dataSource = new MultitenantDataSource();
-        dataSource.setDefaultTargetDataSource(resolvedDataSources.get(defaultTenant));
-        dataSource.setTargetDataSources(resolvedDataSources);
+        this.routingDataSource = new MultitenantDataSource();
+        routingDataSource.setDefaultTargetDataSource(resolvedDataSources.get(defaultTenant));
+        routingDataSource.setTargetDataSources(new HashMap<>(resolvedDataSources));
 
-        dataSource.afterPropertiesSet();
-        return dataSource;
+        routingDataSource.afterPropertiesSet();
+        return routingDataSource;
     }
 
     private void loadTenantDataSources() {
