@@ -5,6 +5,7 @@ HELP.md
 !**/src/main/**/build/
 !**/src/test/**/build/
 /logs
+src/main/resources/logback.xml
 
 ### STS ###
 .apt_generated
