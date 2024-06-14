@@ -33,7 +33,8 @@ public class SecurityConfiguration {
                                                 .requestMatchers("/auth/register", "/auth/login", "/api/student/health", "/actuator/*")
                                                 .permitAll()
                                                 .anyRequest()
-                                                .authenticated()
+                                                // .authenticated()
+                                                .permitAll()
                                                 )
                                 .sessionManagement(management -> management
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
