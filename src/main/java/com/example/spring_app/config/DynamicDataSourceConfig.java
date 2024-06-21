@@ -2,6 +2,7 @@ package com.example.spring_app.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -23,8 +24,8 @@ public class DynamicDataSourceConfig {
     @Value("${spring.datasource.defaultTenant}")
     private String defaultTenant;
 
-    @Value("${spring.datasource.tenantsFilePath}")
-    private String tenantsFilePath;
+    @Autowired
+    SSMConfig ssmConfig;
 
     Map<Object, Object> resolvedDataSources = new HashMap<>();
     final Logger logger = LoggerFactory.getLogger(DynamicDataSourceConfig.class);
@@ -48,17 +49,12 @@ public class DynamicDataSourceConfig {
     }
 
     private void loadTenantDataSources() {
-        File[] files = Paths.get(tenantsFilePath).toFile().listFiles();
-        if (files != null) {
-            for (File propertyFile : files) {
-                if (propertyFile.isFile() && propertyFile.getName().endsWith(".properties")) {
-                    String tenantId = getTenantNameFromFileName(propertyFile.getName());
-                    DataSource dataSource = createDataSource(propertyFile);
+        String[] tenaStrings = { "//schoolA//dbconfig" };
 
-                    if (tenantId != null && dataSource != null) {
-                        resolvedDataSources.put(tenantId, dataSource);
-                    }
-                }
+        for (String tenantID : tenaStrings) {
+            DataSource dataSource = createDataSource(tenantID);
+            if (tenantID != null && dataSource != null) {
+                resolvedDataSources.put(tenantID, dataSource);
             }
         }
     }
@@ -68,21 +64,33 @@ public class DynamicDataSourceConfig {
         return tenantFileName.substring(0, tenantFileName.lastIndexOf("."));
     }
 
-    private DataSource createDataSource(File propertyFile) {
+    private DataSource createDataSource(String tenantID) {
 
-        try (FileInputStream fis = new FileInputStream(propertyFile)) {
-            Properties properties = new Properties();
-            properties.load(fis);
+        try {
+            String properties = ssmConfig.getParameterValue(tenantID);
+            logger.info("parameter: " + properties);
+            // logger.info("url: " + properties.get("url"));
+
 
             DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
-            dataSourceBuilder.driverClassName(properties.getProperty("datasource.driver-class-name"));
-            dataSourceBuilder.username(properties.getProperty("datasource.username"));
-            dataSourceBuilder.password(properties.getProperty("datasource.password"));
-            dataSourceBuilder.url(properties.getProperty("datasource.url"));
+            // dataSourceBuilder.driverClassName(properties.get("driver-class-name"));
+            // dataSourceBuilder.username(properties.get("username"));
+            // dataSourceBuilder.password(properties.get("password"));
+            // dataSourceBuilder.url(properties.get("url"));
 
             return dataSourceBuilder.build();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Problem in tenant datasource:" + e);
         }
+    }
+
+    private Map<String, String> parseParameterValue(String parameterValue) {
+        Map<String, String> properties = new HashMap<>();
+        String[] entries = parameterValue.split(",");
+        for (String entry : entries) {
+            String[] keyValue = entry.split("=");
+            properties.put(keyValue[0].trim(), keyValue[1].trim());
+        }
+        return properties;
     }
 }

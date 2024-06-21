@@ -21,7 +21,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'com.amazonaws:aws-java-sdk-ssm:1.11.1000'
+	implementation 'software.amazon.awssdk:aws-sdk-java:2.26.7'
 
 
 

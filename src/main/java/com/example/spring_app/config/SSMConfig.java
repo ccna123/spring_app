@@ -1,32 +1,33 @@
 package com.example.spring_app.config;
 
-import java.util.Map;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
-import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClientBuilder;
-import com.amazonaws.services.simplesystemsmanagement.model.GetParameterRequest;
-import com.amazonaws.services.simplesystemsmanagement.model.GetParameterResult;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
+import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
 
-import io.jsonwebtoken.io.IOException;
-
+@Configuration
 public class SSMConfig {
 
     @Bean
-    AWSSimpleSystemsManagement ssmClient(){
-        return AWSSimpleSystemsManagementClientBuilder.defaultClient();
+    SsmClient ssmClient() {
+        return SsmClient.builder()
+                .region(Region.AP_NORTHEAST_1)
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .build();
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<String, String> getTenantDbConfig(String tenantId) throws IOException, JsonMappingException, JsonProcessingException{
-        GetParameterRequest request = new GetParameterRequest().withName("/" + tenantId + "dbconfig").withWithDecryption(true);
-        GetParameterResult result = ssmClient().getParameter(request);
-
-        String parameterValue = result.getParameter().getValue();
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(parameterValue, Map.class);
+    public String getParameterValue(String parameterName) {
+        SsmClient ssmClient = ssmClient();
+        GetParameterRequest parameterRequest = GetParameterRequest.builder()
+                .name(parameterName)
+                .withDecryption(true)
+                .build();
+        
+        GetParameterResponse parameterResponse = ssmClient.getParameter(parameterRequest);
+        return parameterResponse.parameter().value();
     }
 }
