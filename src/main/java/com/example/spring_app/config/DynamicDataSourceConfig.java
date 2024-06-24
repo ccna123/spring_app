@@ -9,9 +9,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.sql.DataSource;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -23,6 +28,9 @@ public class DynamicDataSourceConfig {
 
     @Value("${spring.datasource.defaultTenant}")
     private String defaultTenant;
+
+    @Value("${spring.datasource.tenantsFilePath}")
+    private String tenantsFilePath;
 
     @Autowired
     SSMConfig ssmConfig;
@@ -49,12 +57,19 @@ public class DynamicDataSourceConfig {
     }
 
     private void loadTenantDataSources() {
-        String[] tenaStrings = { "//schoolA//dbconfig" };
+        Map<String, String> properties = ssmConfig.getParameterByPath("/tenants/");
+        parseParameterValue(properties);
+        File[] files = Paths.get(tenantsFilePath).toFile().listFiles();
+        if (files != null) {
+            for (File propertyFile : files) {
+                if (propertyFile.isFile() && propertyFile.getName().endsWith(".properties")) {
+                    String tenantId = getTenantNameFromFileName(propertyFile.getName());
+                    DataSource dataSource = createDataSource(propertyFile);
 
-        for (String tenantID : tenaStrings) {
-            DataSource dataSource = createDataSource(tenantID);
-            if (tenantID != null && dataSource != null) {
-                resolvedDataSources.put(tenantID, dataSource);
+                    if (tenantId != null && dataSource != null) {
+                        resolvedDataSources.put(tenantId, dataSource);
+                    }
+                }
             }
         }
     }
@@ -64,33 +79,50 @@ public class DynamicDataSourceConfig {
         return tenantFileName.substring(0, tenantFileName.lastIndexOf("."));
     }
 
-    private DataSource createDataSource(String tenantID) {
+    private DataSource createDataSource(File propertyFile) {
 
-        try {
-            String properties = ssmConfig.getParameterValue(tenantID);
-            logger.info("parameter: " + properties);
-            // logger.info("url: " + properties.get("url"));
-
+       try (FileInputStream fis = new FileInputStream(propertyFile)) {
+            Properties properties = new Properties();
+            properties.load(fis);
 
             DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
-            // dataSourceBuilder.driverClassName(properties.get("driver-class-name"));
-            // dataSourceBuilder.username(properties.get("username"));
-            // dataSourceBuilder.password(properties.get("password"));
-            // dataSourceBuilder.url(properties.get("url"));
+            dataSourceBuilder.driverClassName(properties.getProperty("datasource.driver-class-name"));
+            dataSourceBuilder.username(properties.getProperty("datasource.username"));
+            dataSourceBuilder.password(properties.getProperty("datasource.password"));
+            dataSourceBuilder.url(properties.getProperty("datasource.url"));
 
             return dataSourceBuilder.build();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException("Problem in tenant datasource:" + e);
         }
     }
 
-    private Map<String, String> parseParameterValue(String parameterValue) {
-        Map<String, String> properties = new HashMap<>();
-        String[] entries = parameterValue.split(",");
-        for (String entry : entries) {
-            String[] keyValue = entry.split("=");
-            properties.put(keyValue[0].trim(), keyValue[1].trim());
+    private void parseParameterValue(Map<String, String> properties) {
+        
+        try {
+            
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonValue = entry.getValue();
+
+                JsonNode jsonNode = objectMapper.readTree(jsonValue);                
+                String fileName = entry.getKey().split("/")[2] + ".properties";
+
+                File file = Paths.get("C:\\allTenants", fileName).toFile();
+                try(FileWriter writer = new FileWriter(file)) {
+                    writer.write("name=" + jsonNode.get("name").asText()+"\n");
+                    writer.write("datasource.url=" + jsonNode.get("url").asText()+"\n");
+                    writer.write("datasource.driver-class-name=" + jsonNode.get("driver-class-name").asText()+"\n");
+                    writer.write("datasource.username=" + jsonNode.get("username").asText()+"\n");
+                    writer.write("datasource.password=" + jsonNode.get("password").asText()+"\n");
+                } catch (IOException e) {
+                    logger.error("IOException: ", e);
+                }
+                System.out.println("Written to file: " + file.getAbsolutePath());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return properties;
     }
 }
