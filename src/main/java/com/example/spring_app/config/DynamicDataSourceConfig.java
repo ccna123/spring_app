@@ -75,7 +75,7 @@ public class DynamicDataSourceConfig {
     }
 
     private String getTenantNameFromFileName(String tenantFileName) {
-        logger.warn("tenantFileName: " + tenantFileName);
+        logger.info("tenantFileName: " + tenantFileName);
         return tenantFileName.substring(0, tenantFileName.lastIndexOf("."));
     }
 

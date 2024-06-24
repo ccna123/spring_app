@@ -23,7 +23,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation("software.amazon.awssdk:ssm")
 	implementation(platform("software.amazon.awssdk:bom:2.26.7"))
-	// implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
+	implementation(platform("software.amazon.awssdk:dynamodb"))
 
 
 
