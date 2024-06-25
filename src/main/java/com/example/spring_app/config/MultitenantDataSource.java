@@ -10,7 +10,7 @@ public class MultitenantDataSource  extends AbstractRoutingDataSource{
     final Logger logger = LoggerFactory.getLogger(MultitenantDataSource.class);
     @Override
     protected Object determineCurrentLookupKey() {
-        logger.warn("getCurrentTenant: " + TenantContext.getCurrentTenant());
+        logger.info("getCurrentTenant: " + TenantContext.getCurrentTenant());
         return TenantContext.getCurrentTenant();
     }
     

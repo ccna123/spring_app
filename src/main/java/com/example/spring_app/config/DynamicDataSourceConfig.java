@@ -8,9 +8,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
+
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -25,6 +33,12 @@ public class DynamicDataSourceConfig {
 
     @Value("${spring.datasource.tenantsFilePath}")
     private String tenantsFilePath;
+    
+    @Value("${spring.datasource.dynamodbTable}")
+    private String dynamodbTable;
+    
+    @Value("${spring.datasource.region}")
+    private String region;
 
     Map<Object, Object> resolvedDataSources = new HashMap<>();
     final Logger logger = LoggerFactory.getLogger(DynamicDataSourceConfig.class);
@@ -36,6 +50,39 @@ public class DynamicDataSourceConfig {
         loadTenantDataSources();
         return routingDatasource();
 
+    }
+
+    public void fetchAndStoreTenantConfigFromDynamoDB(String tenantId){
+        AmazonDynamoDB client = AmazonDynamoDBClientBuilder
+                                .standard()
+                                .withRegion(region)
+                                .build();
+        DynamoDB dynamoDB = new DynamoDB(client);
+        Table table = dynamoDB.getTable(dynamodbTable);
+
+        GetItemSpec spec = new GetItemSpec().withPrimaryKey("tenantID", tenantId);
+        try {
+            Item item = table.getItem(spec);
+            if (item != null) {
+                String tenantProperties = item.getString("tenantProperties");
+                storeItemLocally(tenantId, tenantProperties);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to retrieve item: " + e.getMessage());
+        }
+    }
+
+    public String getTenantsFilePath() {
+        return tenantsFilePath;
+    }
+    
+    private void storeItemLocally(String tenantId, String itemJson){
+        try(FileWriter file = new FileWriter(Paths.get(tenantsFilePath, tenantId + ".properties").toString())) {
+            file.write(itemJson);
+            System.out.println("Store item as: " + tenantId + ".properties");
+        } catch (IOException e) {
+            logger.error("Failed to store item locally", e.getMessage());
+        }
     }
 
     private DataSource routingDatasource() {
@@ -67,6 +114,8 @@ public class DynamicDataSourceConfig {
         logger.warn("tenantFileName: " + tenantFileName);
         return tenantFileName.substring(0, tenantFileName.lastIndexOf("."));
     }
+
+    
 
     private DataSource createDataSource(File propertyFile) {
 
