@@ -25,7 +25,7 @@ public class TenantIntercepter implements HandlerInterceptor {
             throws Exception {
         String tenantId = request.getHeader(TENANT_HEADER);
         String filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + tenantId + ".properties";
-        if (tenantId == null) {
+        if (tenantId == null || tenantId.length() == 0) {
             TenantContext.setCurrentTenant("master");
             if (!isFileExists(filePath)) {
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
