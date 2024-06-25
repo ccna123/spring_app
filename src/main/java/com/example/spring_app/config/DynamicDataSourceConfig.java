@@ -66,6 +66,7 @@ public class DynamicDataSourceConfig {
             if (item != null) {
                 String tenantProperties = item.getString("tenantProperties");
                 storeItemLocally(tenantId, tenantProperties);
+                reloadTenantDataSource(tenantId);
             }
         } catch (Exception e) {
             logger.error("Failed to retrieve item: " + e.getMessage());
@@ -79,7 +80,6 @@ public class DynamicDataSourceConfig {
     private void storeItemLocally(String tenantId, String itemJson){
         try(FileWriter file = new FileWriter(Paths.get(tenantsFilePath, tenantId + ".properties").toString())) {
             file.write(itemJson);
-            System.out.println("Store item as: " + tenantId + ".properties");
         } catch (IOException e) {
             logger.error("Failed to store item locally", e.getMessage());
         }
@@ -92,6 +92,19 @@ public class DynamicDataSourceConfig {
 
         routingDataSource.afterPropertiesSet();
         return routingDataSource;
+    }
+
+    private void reloadTenantDataSource(String tenantId) {
+        File propertyFile = new File(Paths.get(tenantsFilePath, tenantId + ".properties").toString());
+        if (propertyFile.exists()) {
+            DataSource dataSource = createDataSource(propertyFile);
+            if (dataSource != null) {
+                resolvedDataSources.put(tenantId, dataSource);
+                routingDataSource.setTargetDataSources(new HashMap<>(resolvedDataSources));
+                routingDataSource.afterPropertiesSet();
+                logger.info("Reloaded data source for tenant: " + tenantId);
+            }
+        }
     }
 
     private void loadTenantDataSources() {
