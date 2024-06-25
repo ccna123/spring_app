@@ -24,13 +24,22 @@ public class TenantIntercepter implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         String tenantId = request.getHeader(TENANT_HEADER);
-        if (tenantId != null) {
-            TenantContext.setCurrentTenant(tenantId);
-            if (!Files.exists(Paths.get(dynamicDataSourceConfig.getTenantsFilePath(), tenantId + ".properties"))) {
+        if (tenantId == null) {
+            TenantContext.setCurrentTenant("master");
+            if (isFileExists(dynamicDataSourceConfig.getTenantsFilePath() + tenantId + ".properties")) {
+                dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
+            }
+        } else if (tenantId != null) {
+            if (isFileExists(dynamicDataSourceConfig.getTenantsFilePath() + tenantId + ".properties")) {
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
             }
         }
+        TenantContext.setCurrentTenant(tenantId);
         return true;
+    }
+
+    private boolean isFileExists(String path) {
+        return !Files.exists(Paths.get(path));
     }
 
     @Override
