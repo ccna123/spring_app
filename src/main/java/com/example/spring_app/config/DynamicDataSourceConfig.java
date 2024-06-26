@@ -53,6 +53,7 @@ public class DynamicDataSourceConfig {
     }
 
     public void fetchAndStoreTenantConfigFromDynamoDB(String tenantId){
+        System.out.println("Go to dynamodb and fetch file");
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder
                                 .standard()
                                 .withRegion(region)
