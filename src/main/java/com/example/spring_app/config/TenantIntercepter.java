@@ -24,20 +24,31 @@ public class TenantIntercepter implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         String tenantId = request.getHeader(TENANT_HEADER);
-        String filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + tenantId + ".properties";
+        String filePath = "";
         if (tenantId == null || tenantId.length() == 0) {
+            filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + "master" + ".properties";
+            System.out.println("-------------------------------------------------------------");
+            System.out.println("Tenant header null. Get master tenant");
             if (!isFileExists(filePath)) {
+                System.out.println("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB("master");
             }
-            System.out.println("Tenant header null. Fetch master config");
+            System.out.println(filePath);
+            System.out.println("File already existed. Fetch config locally");
             TenantContext.setCurrentTenant("master");
             return true;
         } else if (tenantId != null) {
+            System.out.println("-------------------------------------------------------------");
+            System.out.println("Tenant header not null. Get " + tenantId + " tenant");
+            filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + tenantId + ".properties";
             if (!isFileExists(filePath)) {
+                System.out.println("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
             }
+            System.out.println(filePath);
+            System.out.println("File already existed. Fetch config locally");
+            TenantContext.setCurrentTenant(tenantId);
         }
-        TenantContext.setCurrentTenant(tenantId);
         return true;
     }
 
