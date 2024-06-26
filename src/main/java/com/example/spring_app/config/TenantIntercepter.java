@@ -28,6 +28,8 @@ public class TenantIntercepter implements HandlerInterceptor {
             throws Exception {
         String tenantId = request.getHeader(TENANT_HEADER);
         String filePath = "";
+        logger.info("-------------------------------------------------------------");
+        logger.info("request: " + request);
         if (tenantId == null || tenantId.length() == 0) {
             filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + "master" + ".properties";
             logger.info("-------------------------------------------------------------");
