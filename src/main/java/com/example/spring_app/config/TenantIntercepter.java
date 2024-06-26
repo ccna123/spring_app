@@ -30,26 +30,28 @@ public class TenantIntercepter implements HandlerInterceptor {
         String filePath = "";
         if (tenantId == null || tenantId.length() == 0) {
             filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + "master" + ".properties";
-            System.out.println("-------------------------------------------------------------");
-            System.out.println("Tenant header null. Get master tenant");
+            logger.info("-------------------------------------------------------------");
+            logger.info("Tenant header null. Get master tenant");
             if (!isFileExists(filePath)) {
-                System.out.println("File does not exist. Fetch and store locally");
+                logger.info("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB("master");
+            }else{
+                logger.info(filePath);
+                logger.info("File already existed. Fetch config locally");
             }
-            System.out.println(filePath);
-            System.out.println("File already existed. Fetch config locally");
             TenantContext.setCurrentTenant("master");
             return true;
         } else if (tenantId != null) {
-            System.out.println("-------------------------------------------------------------");
-            System.out.println("Tenant header not null. Get " + tenantId + " tenant");
+            logger.info("-------------------------------------------------------------");
+            logger.info("Tenant header not null. Get " + tenantId + " tenant");
             filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + tenantId + ".properties";
             if (!isFileExists(filePath)) {
-                System.out.println("File does not exist. Fetch and store locally");
+                logger.info("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
+            }else{
+                logger.info(filePath);
+                logger.info("File already existed. Fetch config locally");
             }
-            System.out.println(filePath);
-            System.out.println("File already existed. Fetch config locally");
             TenantContext.setCurrentTenant(tenantId);
         }
         return true;
