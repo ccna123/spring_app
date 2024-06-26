@@ -18,6 +18,7 @@ public class TenantFilter implements Filter {
 
         HttpServletRequest req = (HttpServletRequest) request;
         String tenantName = req.getHeader("X-TenantID");
+        System.out.println("TenantFilter" + tenantName);
 
         if (tenantName != null) {
             TenantContext.setCurrentTenant(tenantName);

@@ -28,31 +28,34 @@ public class TenantIntercepter implements HandlerInterceptor {
             throws Exception {
         String tenantId = request.getHeader(TENANT_HEADER);
         String filePath = "";
-        logger.info("-------------------------------------------------------------");
-        logger.info("request: " + request);
+        
+        if (request.getRequestURI().equals("/actuator/health")) {
+            return true;
+        }
+
         if (tenantId == null || tenantId.length() == 0) {
             filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + "master" + ".properties";
-            logger.info("-------------------------------------------------------------");
-            logger.info("Tenant header null. Get master tenant");
+            System.out.println("-------------------------------------------------------------");
+            System.out.println("Tenant header null. Get master tenant");
             if (!isFileExists(filePath)) {
-                logger.info("File does not exist. Fetch and store locally");
+                System.out.println("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB("master");
             }else{
-                logger.info(filePath);
-                logger.info("File already existed. Fetch config locally");
+                System.out.println(filePath);
+                System.out.println("File already existed. Fetch config locally");
             }
             TenantContext.setCurrentTenant("master");
             return true;
         } else if (tenantId != null) {
-            logger.info("-------------------------------------------------------------");
-            logger.info("Tenant header not null. Get " + tenantId + " tenant");
+            System.out.println("-------------------------------------------------------------");
+            System.out.println("Tenant header not null. Get " + tenantId + " tenant");
             filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + tenantId + ".properties";
             if (!isFileExists(filePath)) {
-                logger.info("File does not exist. Fetch and store locally");
+                System.out.println("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
             }else{
-                logger.info(filePath);
-                logger.info("File already existed. Fetch config locally");
+                System.out.println(filePath);
+                System.out.println("File already existed. Fetch config locally");
             }
             TenantContext.setCurrentTenant(tenantId);
         }
