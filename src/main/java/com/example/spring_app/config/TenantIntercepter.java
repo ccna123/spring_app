@@ -29,7 +29,7 @@ public class TenantIntercepter implements HandlerInterceptor {
             if (!isFileExists(filePath)) {
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB("master");
             }
-            System.out.println("Tenant header null. Fetch the default config");
+            System.out.println("Tenant header null. Fetch master config");
             TenantContext.setCurrentTenant("master");
             return true;
         } else if (tenantId != null) {
