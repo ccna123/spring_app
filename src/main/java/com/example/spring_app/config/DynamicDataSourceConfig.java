@@ -47,14 +47,14 @@ public class DynamicDataSourceConfig {
 
     @Bean
     DataSource dataSource() {
-        System.out.println("DynamicDataSourceConfig get called");
+        logger.info("DynamicDataSourceConfig get called");
         loadTenantDataSources();
         return routingDatasource();
 
     }
 
     public void fetchAndStoreTenantConfigFromDynamoDB(String tenantId){
-        System.out.println("Go to dynamodb and fetch file");
+        logger.info("Go to dynamodb and fetch file");
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder
                                 .standard()
                                 .withRegion(region)
@@ -95,7 +95,8 @@ public class DynamicDataSourceConfig {
         return routingDataSource;
     }
 
-    private void reloadTenantDataSource(String tenantId) {
+    public void reloadTenantDataSource(String tenantId) {
+        logger.info("reloadTenantDataSource");
         File propertyFile = new File(Paths.get(tenantsFilePath, tenantId + ".properties").toString());
         if (propertyFile.exists()) {
             DataSource dataSource = createDataSource(propertyFile);
@@ -106,6 +107,11 @@ public class DynamicDataSourceConfig {
                 logger.info("Reloaded data source for tenant: " + tenantId);
             }
         }
+    }
+
+    public boolean isDataSourceAlreadyLoaded(String tenantId){
+        logger.info("Datasource is already loaded: " + resolvedDataSources.containsKey(tenantId));
+        return resolvedDataSources.containsKey(tenantId);
     }
 
     private void loadTenantDataSources() {
