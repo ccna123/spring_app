@@ -34,7 +34,7 @@ public class TenantIntercepter implements HandlerInterceptor {
         }
 
         if (tenantId == null || tenantId.length() == 0) {
-            filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + "master" + ".properties";
+            filePath = dynamicDataSourceConfig.getTenantsFilePath() + "/" + "master" + ".properties";
             System.out.println("-------------------------------------------------------------");
             System.out.println("Tenant header null. Get master tenant");
             if (!isFileExists(filePath)) {
@@ -49,7 +49,7 @@ public class TenantIntercepter implements HandlerInterceptor {
         } else if (tenantId != null) {
             System.out.println("-------------------------------------------------------------");
             System.out.println("Tenant header not null. Get " + tenantId + " tenant");
-            filePath = dynamicDataSourceConfig.getTenantsFilePath() + "\\" + tenantId + ".properties";
+            filePath = dynamicDataSourceConfig.getTenantsFilePath() + "/" + tenantId + ".properties";
             if (!isFileExists(filePath)) {
                 System.out.println("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
