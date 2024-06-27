@@ -3,6 +3,7 @@ package com.example.spring_app.config;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,19 +29,19 @@ public class TenantIntercepter implements HandlerInterceptor {
             throws Exception {
         String tenantId = request.getHeader(TENANT_HEADER);
         String filePath = "";
-        
+
         if (request.getRequestURI().equals("/actuator/health")) {
             return true;
         }
 
-        if (tenantId == null || tenantId.length() == 0) {
+        if (StringUtils.isBlank(tenantId) && StringUtils.isBlank(request.getHeader(filePath))) {
             filePath = dynamicDataSourceConfig.getTenantsFilePath() + "/" + "master" + ".properties";
             System.out.println("-------------------------------------------------------------");
             System.out.println("Tenant header null. Get master tenant");
             if (!isFileExists(filePath)) {
                 System.out.println("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB("master");
-            }else{
+            } else {
                 System.out.println(filePath);
                 System.out.println("File already existed. Fetch config locally");
             }
@@ -53,7 +54,7 @@ public class TenantIntercepter implements HandlerInterceptor {
             if (!isFileExists(filePath)) {
                 System.out.println("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
-            }else{
+            } else {
                 System.out.println(filePath);
                 System.out.println("File already existed. Fetch config locally");
             }

@@ -47,6 +47,7 @@ public class DynamicDataSourceConfig {
 
     @Bean
     DataSource dataSource() {
+        System.out.println("DynamicDataSourceConfig get called");
         loadTenantDataSources();
         return routingDatasource();
 
@@ -87,10 +88,9 @@ public class DynamicDataSourceConfig {
     }
 
     private DataSource routingDatasource() {
-        this.routingDataSource = new MultitenantDataSource();
+        this.routingDataSource = new MultitenantDataSourceRouting();
         routingDataSource.setDefaultTargetDataSource(resolvedDataSources.get(defaultTenant));
         routingDataSource.setTargetDataSources(new HashMap<>(resolvedDataSources));
-
         routingDataSource.afterPropertiesSet();
         return routingDataSource;
     }
