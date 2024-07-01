@@ -16,6 +16,7 @@ import com.example.spring_app.model.Student;
 import com.example.spring_app.response.ResponseHandler;
 import com.example.spring_app.service.StudentService;
 import com.example.spring_app.DTO.NameScoreDTO;
+import com.example.spring_app.context.TenantContext;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -46,6 +47,7 @@ public class StudentController {
     @GetMapping(value = { "/get", "/get/{id}" })
     public ResponseEntity<Object> getStudentDetail(@PathVariable(value = "id", required = false) Optional<Integer> id) {
         System.out.println("StudentController is called");
+        System.out.println("getCurrentTenant: " + TenantContext.getCurrentTenant());
         try {
             if (id.isPresent()) {
                 Integer studentId = id.get();

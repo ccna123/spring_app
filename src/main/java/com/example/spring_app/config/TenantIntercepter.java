@@ -3,7 +3,6 @@ package com.example.spring_app.config;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,39 +32,20 @@ public class TenantIntercepter implements HandlerInterceptor {
         if (request.getRequestURI().equals("/actuator/health")) {
             return true;
         }
-
-        if (StringUtils.isBlank(tenantId) && StringUtils.isBlank(request.getHeader(filePath))) {
-            filePath = dynamicDataSourceConfig.getTenantsFilePath() + "/" + "master" + ".properties";
-            logger.info("-------------------------------------------------------------");
-            logger.info("Tenant header null. Get master tenant");
+            System.out.println("-------------------------------------------------------------");
+            filePath = dynamicDataSourceConfig.getTenantsFilePath() + tenantId + ".properties";
             if (!isFileExists(filePath)) {
-                logger.info("File does not exist. Fetch and store locally");
-                dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB("master");
-            } else {
-                logger.info(filePath);
-                logger.info("File already existed. Fetch config locally");
-                if (!dynamicDataSourceConfig.isDataSourceAlreadyLoaded(tenantId)) {
-                    dynamicDataSourceConfig.reloadTenantDataSource(tenantId);
-                }
-            }
-            TenantContext.setCurrentTenant("master");
-            return true;
-        } else if (tenantId != null) {
-            logger.info("-------------------------------------------------------------");
-            logger.info("Tenant header not null. Get " + tenantId + " tenant");
-            filePath = dynamicDataSourceConfig.getTenantsFilePath() + "/" + tenantId + ".properties";
-            if (!isFileExists(filePath)) {
-                logger.info("File does not exist. Fetch and store locally");
+                System.out.println("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
             } else {
-                logger.info(filePath);
-                logger.info("File already existed. Fetch config locally");
+                System.out.println(filePath);
+                System.out.println("File already existed. Fetch config locally");
                 if (!dynamicDataSourceConfig.isDataSourceAlreadyLoaded(tenantId)) {
                     dynamicDataSourceConfig.reloadTenantDataSource(tenantId);
                 }
             }
             TenantContext.setCurrentTenant(tenantId);
-        }
+        
         return true;
     }
 

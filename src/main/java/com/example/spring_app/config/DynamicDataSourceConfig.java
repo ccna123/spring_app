@@ -1,5 +1,6 @@
 package com.example.spring_app.config;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,10 +34,10 @@ public class DynamicDataSourceConfig {
 
     @Value("${spring.datasource.tenantsFilePath}")
     private String tenantsFilePath;
-    
+
     @Value("${spring.datasource.dynamodbTable}")
     private String dynamodbTable;
-    
+
     @Value("${spring.datasource.region}")
     private String region;
 
@@ -44,21 +45,23 @@ public class DynamicDataSourceConfig {
     final Logger logger = LoggerFactory.getLogger(DynamicDataSourceConfig.class);
 
     private AbstractRoutingDataSource routingDataSource;
-
+    
+    public DynamicDataSourceConfig() {
+        System.out.println("DynamicDataSourceConfig get called again");
+    }
+    
     @Bean
     DataSource dataSource() {
-        logger.info("DynamicDataSourceConfig get called");
         loadTenantDataSources();
         return routingDatasource();
-
     }
 
-    public void fetchAndStoreTenantConfigFromDynamoDB(String tenantId){
-        logger.info("Go to dynamodb and fetch file");
+    public void fetchAndStoreTenantConfigFromDynamoDB(String tenantId) {
+        System.out.println("Go to dynamodb and fetch file");
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder
-                                .standard()
-                                .withRegion(region)
-                                .build();
+                .standard()
+                .withRegion(region)
+                .build();
         DynamoDB dynamoDB = new DynamoDB(client);
         Table table = dynamoDB.getTable(dynamodbTable);
 
@@ -78,9 +81,9 @@ public class DynamicDataSourceConfig {
     public String getTenantsFilePath() {
         return tenantsFilePath;
     }
-    
-    private void storeItemLocally(String tenantId, String itemJson){
-        try(FileWriter file = new FileWriter(Paths.get(tenantsFilePath, tenantId + ".properties").toString())) {
+
+    private void storeItemLocally(String tenantId, String itemJson) {
+        try (FileWriter file = new FileWriter(Paths.get(tenantsFilePath, tenantId + ".properties").toString())) {
             file.write(itemJson);
         } catch (IOException e) {
             logger.error("Failed to store item locally", e.getMessage());
@@ -96,21 +99,25 @@ public class DynamicDataSourceConfig {
     }
 
     public void reloadTenantDataSource(String tenantId) {
-        logger.info("reloadTenantDataSource");
+        System.out.println("reloadTenantDataSource");
+        System.out.println("resolvedDataSources: " + resolvedDataSources);
+        System.out.println("tenantId: " + tenantId);
+
         File propertyFile = new File(Paths.get(tenantsFilePath, tenantId + ".properties").toString());
         if (propertyFile.exists()) {
             DataSource dataSource = createDataSource(propertyFile);
             if (dataSource != null) {
-                resolvedDataSources.put(tenantId, dataSource);
+                resolvedDataSources.put(StringUtils.isBlank(tenantId) ? "master" : tenantId,
+                        dataSource);
                 routingDataSource.setTargetDataSources(new HashMap<>(resolvedDataSources));
                 routingDataSource.afterPropertiesSet();
-                logger.info("Reloaded data source for tenant: " + tenantId);
+                System.out.println("Reloaded data source for tenant: " + tenantId);
             }
         }
     }
 
-    public boolean isDataSourceAlreadyLoaded(String tenantId){
-        logger.info("Datasource is already loaded: " + resolvedDataSources.containsKey(tenantId));
+    public boolean isDataSourceAlreadyLoaded(String tenantId) {
+        System.out.println("Datasource is already loaded: " + resolvedDataSources.containsKey(tenantId));
         return resolvedDataSources.containsKey(tenantId);
     }
 
@@ -131,11 +138,9 @@ public class DynamicDataSourceConfig {
     }
 
     private String getTenantNameFromFileName(String tenantFileName) {
-        logger.warn("tenantFileName: " + tenantFileName);
+        System.out.println("tenantFileName: " + tenantFileName);
         return tenantFileName.substring(0, tenantFileName.lastIndexOf("."));
     }
-
-    
 
     private DataSource createDataSource(File propertyFile) {
 
