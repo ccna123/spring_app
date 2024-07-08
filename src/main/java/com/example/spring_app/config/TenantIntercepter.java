@@ -32,14 +32,14 @@ public class TenantIntercepter implements HandlerInterceptor {
         if (request.getRequestURI().equals("/actuator/health")) {
             return true;
         }
-            System.out.println("-------------------------------------------------------------");
+            // System.out.println("-------------------------------------------------------------");
             filePath = dynamicDataSourceConfig.getTenantsFilePath() + tenantId + ".properties";
             if (!isFileExists(filePath)) {
-                System.out.println("File does not exist. Fetch and store locally");
+                // System.out.println("File does not exist. Fetch and store locally");
                 dynamicDataSourceConfig.fetchAndStoreTenantConfigFromDynamoDB(tenantId);
             } else {
-                System.out.println(filePath);
-                System.out.println("File already existed. Fetch config locally");
+                // System.out.println(filePath);
+                // System.out.println("File already existed. Fetch config locally");
                 if (!dynamicDataSourceConfig.isDataSourceAlreadyLoaded(tenantId)) {
                     dynamicDataSourceConfig.reloadTenantDataSource(tenantId);
                 }

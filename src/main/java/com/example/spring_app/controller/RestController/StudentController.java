@@ -46,8 +46,6 @@ public class StudentController {
 
     @GetMapping(value = { "/get", "/get/{id}" })
     public ResponseEntity<Object> getStudentDetail(@PathVariable(value = "id", required = false) Optional<Integer> id) {
-        System.out.println("StudentController is called");
-        System.out.println("getCurrentTenant: " + TenantContext.getCurrentTenant());
         try {
             if (id.isPresent()) {
                 Integer studentId = id.get();

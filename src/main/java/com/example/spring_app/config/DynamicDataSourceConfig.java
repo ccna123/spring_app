@@ -47,7 +47,7 @@ public class DynamicDataSourceConfig {
     private AbstractRoutingDataSource routingDataSource;
     
     public DynamicDataSourceConfig() {
-        System.out.println("DynamicDataSourceConfig get called again");
+        // System.out.println("DynamicDataSourceConfig get called again");
     }
     
     @Bean
@@ -57,7 +57,7 @@ public class DynamicDataSourceConfig {
     }
 
     public void fetchAndStoreTenantConfigFromDynamoDB(String tenantId) {
-        System.out.println("Go to dynamodb and fetch file");
+        // System.out.println("Go to dynamodb and fetch file");
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder
                 .standard()
                 .withRegion(region)
@@ -99,9 +99,9 @@ public class DynamicDataSourceConfig {
     }
 
     public void reloadTenantDataSource(String tenantId) {
-        System.out.println("reloadTenantDataSource");
-        System.out.println("resolvedDataSources: " + resolvedDataSources);
-        System.out.println("tenantId: " + tenantId);
+        // System.out.println("reloadTenantDataSource");
+        // System.out.println("resolvedDataSources: " + resolvedDataSources);
+        // System.out.println("tenantId: " + tenantId);
 
         File propertyFile = new File(Paths.get(tenantsFilePath, tenantId + ".properties").toString());
         if (propertyFile.exists()) {
@@ -111,13 +111,13 @@ public class DynamicDataSourceConfig {
                         dataSource);
                 routingDataSource.setTargetDataSources(new HashMap<>(resolvedDataSources));
                 routingDataSource.afterPropertiesSet();
-                System.out.println("Reloaded data source for tenant: " + tenantId);
+                // System.out.println("Reloaded data source for tenant: " + tenantId);
             }
         }
     }
 
     public boolean isDataSourceAlreadyLoaded(String tenantId) {
-        System.out.println("Datasource is already loaded: " + resolvedDataSources.containsKey(tenantId));
+        // System.out.println("Datasource is already loaded: " + resolvedDataSources.containsKey(tenantId));
         return resolvedDataSources.containsKey(tenantId);
     }
 
@@ -138,7 +138,7 @@ public class DynamicDataSourceConfig {
     }
 
     private String getTenantNameFromFileName(String tenantFileName) {
-        System.out.println("tenantFileName: " + tenantFileName);
+        // System.out.println("tenantFileName: " + tenantFileName);
         return tenantFileName.substring(0, tenantFileName.lastIndexOf("."));
     }
 
