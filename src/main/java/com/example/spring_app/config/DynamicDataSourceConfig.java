@@ -42,14 +42,9 @@ public class DynamicDataSourceConfig {
     private String region;
 
     Map<Object, Object> resolvedDataSources = new HashMap<>();
-    final Logger logger = LoggerFactory.getLogger(DynamicDataSourceConfig.class);
+    // final Logger logger = LoggerFactory.getLogger(DynamicDataSourceConfig.class);
 
     private AbstractRoutingDataSource routingDataSource;
-    
-    public DynamicDataSourceConfig() {
-        // System.out.println("DynamicDataSourceConfig get called again");
-    }
-    
     @Bean
     DataSource dataSource() {
         loadTenantDataSources();
@@ -57,16 +52,15 @@ public class DynamicDataSourceConfig {
     }
 
     public void fetchAndStoreTenantConfigFromDynamoDB(String tenantId) {
-        // System.out.println("Go to dynamodb and fetch file");
-        AmazonDynamoDB client = AmazonDynamoDBClientBuilder
-                .standard()
-                .withRegion(region)
-                .build();
-        DynamoDB dynamoDB = new DynamoDB(client);
-        Table table = dynamoDB.getTable(dynamodbTable);
-
-        GetItemSpec spec = new GetItemSpec().withPrimaryKey("tenantID", tenantId);
         try {
+            AmazonDynamoDB client = AmazonDynamoDBClientBuilder
+                    .standard()
+                    .withRegion(region)
+                    .build();
+            DynamoDB dynamoDB = new DynamoDB(client);
+            Table table = dynamoDB.getTable(dynamodbTable);
+
+            GetItemSpec spec = new GetItemSpec().withPrimaryKey("tenantID", tenantId);
             Item item = table.getItem(spec);
             if (item != null) {
                 String tenantProperties = item.getString("tenantProperties");
@@ -74,7 +68,8 @@ public class DynamicDataSourceConfig {
                 reloadTenantDataSource(tenantId);
             }
         } catch (Exception e) {
-            logger.error("Failed to retrieve item: " + e.getMessage());
+            System.out.println(e);
+            // logger.error("Failed to retrieve item: " + e.getMessage());
         }
     }
 
@@ -86,7 +81,7 @@ public class DynamicDataSourceConfig {
         try (FileWriter file = new FileWriter(Paths.get(tenantsFilePath, tenantId + ".properties").toString())) {
             file.write(itemJson);
         } catch (IOException e) {
-            logger.error("Failed to store item locally", e.getMessage());
+            // logger.error("Failed to store item locally " + e.getMessage());
         }
     }
 
@@ -99,9 +94,6 @@ public class DynamicDataSourceConfig {
     }
 
     public void reloadTenantDataSource(String tenantId) {
-        // System.out.println("reloadTenantDataSource");
-        // System.out.println("resolvedDataSources: " + resolvedDataSources);
-        // System.out.println("tenantId: " + tenantId);
 
         File propertyFile = new File(Paths.get(tenantsFilePath, tenantId + ".properties").toString());
         if (propertyFile.exists()) {
@@ -111,13 +103,11 @@ public class DynamicDataSourceConfig {
                         dataSource);
                 routingDataSource.setTargetDataSources(new HashMap<>(resolvedDataSources));
                 routingDataSource.afterPropertiesSet();
-                // System.out.println("Reloaded data source for tenant: " + tenantId);
             }
         }
     }
 
     public boolean isDataSourceAlreadyLoaded(String tenantId) {
-        // System.out.println("Datasource is already loaded: " + resolvedDataSources.containsKey(tenantId));
         return resolvedDataSources.containsKey(tenantId);
     }
 
@@ -138,7 +128,6 @@ public class DynamicDataSourceConfig {
     }
 
     private String getTenantNameFromFileName(String tenantFileName) {
-        // System.out.println("tenantFileName: " + tenantFileName);
         return tenantFileName.substring(0, tenantFileName.lastIndexOf("."));
     }
 
